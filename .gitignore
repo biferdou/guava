@@ -12,9 +12,8 @@ _deps
 
 # It's nice to have the Builds folder exist, to remind us where it is
 Builds/*
-build/*
-cmake-build-debug/*
 !Builds/.gitkeep
+cmake-build-debug/*
 
 # This should never exist
 Install/*
