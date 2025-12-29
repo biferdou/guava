@@ -128,9 +128,23 @@ open Builds/Guava.xcodeproj
 
 The project includes schemes for the Standalone app and Tests target.
 
-## Code Signing (Distribution)
+## Local Development (No Code Signing)
 
-For distribution, plugins must be signed and notarized. Required certificates:
+For local development and testing, code signing is **not required**. The built plugins will work on your own machine without signing.
+
+If macOS blocks an unsigned plugin:
+
+1. Open **System Preferences → Security & Privacy → General**
+2. Click "Allow Anyway" for the blocked plugin
+3. Or run this to remove the quarantine attribute:
+   ```bash
+   xattr -cr "Builds/Guava_artefacts/Release/VST3/Guava.vst3"
+   xattr -cr "Builds/Guava_artefacts/Release/AU/Guava.component"
+   ```
+
+## Code Signing (Distribution Only)
+
+Code signing is only needed when distributing plugins to other users. Required certificates:
 - Developer ID Application certificate
 - Developer ID Installer certificate (for .pkg installers)
 
