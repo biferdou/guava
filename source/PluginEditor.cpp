@@ -1,4 +1,5 @@
 #include "PluginEditor.h"
+#include "melatonin_inspector/melatonin_inspector.h"
 
 PluginEditor::PluginEditor (PluginProcessor& p)
     : AudioProcessorEditor (&p), processorRef (p)
