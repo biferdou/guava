@@ -1,49 +1,82 @@
 #include "PluginEditor.h"
-#include "melatonin_inspector/melatonin_inspector.h"
 
 PluginEditor::PluginEditor (PluginProcessor& p)
     : AudioProcessorEditor (&p), processorRef (p)
 {
-    juce::ignoreUnused (processorRef);
+    setupSlider (roomSizeSlider, roomSizeLabel, "Room Size");
+    setupSlider (dampingSlider, dampingLabel, "Damping");
+    setupSlider (wetLevelSlider, wetLevelLabel, "Wet");
+    setupSlider (dryLevelSlider, dryLevelLabel, "Dry");
+    setupSlider (widthSlider, widthLabel, "Width");
+
+    addAndMakeVisible (freezeButton);
+
+    roomSizeAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment> (processorRef.apvts, "roomSize", roomSizeSlider);
+    dampingAttachment  = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment> (processorRef.apvts, "damping", dampingSlider);
+    wetLevelAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment> (processorRef.apvts, "wetLevel", wetLevelSlider);
+    dryLevelAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment> (processorRef.apvts, "dryLevel", dryLevelSlider);
+    widthAttachment    = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment> (processorRef.apvts, "width", widthSlider);
+    freezeAttachment   = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment> (processorRef.apvts, "freeze", freezeButton);
 
     addAndMakeVisible (inspectButton);
-
-    // this chunk of code instantiates and opens the melatonin inspector
     inspectButton.onClick = [&] {
         if (!inspector)
         {
             inspector = std::make_unique<melatonin::Inspector> (*this);
             inspector->onClose = [this]() { inspector.reset(); };
         }
-
         inspector->setVisible (true);
     };
 
-    // Make sure that before the constructor has finished, you've set the
-    // editor's size to whatever you need it to be.
-    setSize (400, 300);
+    setSize (500, 350);
 }
 
 PluginEditor::~PluginEditor()
 {
 }
 
+void PluginEditor::setupSlider (juce::Slider& slider, juce::Label& label, const juce::String& labelText)
+{
+    slider.setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
+    slider.setTextBoxStyle (juce::Slider::TextBoxBelow, false, 60, 18);
+    addAndMakeVisible (slider);
+
+    label.setText (labelText, juce::dontSendNotification);
+    label.setJustificationType (juce::Justification::centred);
+    label.attachToComponent (&slider, false);
+    addAndMakeVisible (label);
+}
+
 void PluginEditor::paint (juce::Graphics& g)
 {
-    // (Our component is opaque, so we must completely fill the background with a solid colour)
     g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));
 
-    auto area = getLocalBounds();
     g.setColour (juce::Colours::white);
-    g.setFont (16.0f);
-    auto helloWorld = juce::String ("Hello from ") + PRODUCT_NAME_WITHOUT_VERSION + " v" VERSION + " running in " + CMAKE_BUILD_TYPE;
-    g.drawText (helloWorld, area.removeFromTop (150), juce::Justification::centred, false);
+    g.setFont (20.0f);
+    g.drawText (PRODUCT_NAME_WITHOUT_VERSION, getLocalBounds().removeFromTop (40), juce::Justification::centred, false);
 }
 
 void PluginEditor::resized()
 {
-    // layout the positions of your child components here
-    auto area = getLocalBounds();
-    area.removeFromBottom(50);
-    inspectButton.setBounds (getLocalBounds().withSizeKeepingCentre(100, 50));
+    auto area = getLocalBounds().reduced (10);
+
+    // Header space (title + label row)
+    area.removeFromTop (55);
+
+    // Knob row
+    auto knobArea = area.removeFromTop (130);
+    auto knobWidth = knobArea.getWidth() / 5;
+
+    roomSizeSlider.setBounds (knobArea.removeFromLeft (knobWidth));
+    dampingSlider.setBounds (knobArea.removeFromLeft (knobWidth));
+    wetLevelSlider.setBounds (knobArea.removeFromLeft (knobWidth));
+    dryLevelSlider.setBounds (knobArea.removeFromLeft (knobWidth));
+    widthSlider.setBounds (knobArea);
+
+    // Bottom row
+    area.removeFromTop (20);
+    auto bottomArea = area.removeFromTop (30);
+    freezeButton.setBounds (bottomArea.removeFromLeft (120));
+    bottomArea.removeFromLeft (10);
+    inspectButton.setBounds (bottomArea.removeFromLeft (120));
 }
